@@ -2,32 +2,42 @@ import React, { Component } from 'react';
 import { View, FlatList, Button, Text, StyleSheet} from 'react-native';
 import uuid from 'uuid';
 
-
 class ListaTareas extends Component {
 
     state = {
         tareas : [
             {titulo: 'Hooks', dia: 'lunes', hora: '5:00',fecha: '8 marzo 2019',id: uuid() },
-            {titulo: 'Redux',dia: 'martes',hora:'6:00',fecha:'9 marzo 2019',id: uuid()},
-            {titulo: 'Navigation', dia: 'miercoles',hora:'7:00',fecha:'10 marzo 2019',id: uuid()},
-            {titulo: 'Fundamentos JS', dia: 'jueves',hora:'8:00',fecha:'11 marzo 2019',id: uuid()},
-            {titulo:  'React Native', dia: 'viernes',hora:'9:00',fecha:'12 marzo 2019',id: uuid()}
+            {titulo: 'Redux',dia: 'martes',hora:'6:00',fecha:'9 marzo 2019',id: uuid() },
+            {titulo: 'Navigation', dia: 'miercoles',hora:'7:00',fecha:'10 marzo 2019', id: uuid() },
+            {titulo: 'Fundamentos JS', dia: 'jueves',hora:'8:00',fecha:'11 marzo 2019', id: uuid() },
+            {titulo: 'React Native', dia: 'viernes',hora:'9:00',fecha:'12 marzo 2019', id: uuid() }
         ],
        tarea: null,
        tareasHechas : []
     }
-
-    crearTearea = () => {
+    
+    crearTearea = () => {    
         let nuevasTareas = this.state.tareas
         let tarea = nuevasTareas.pop()
+        
         this.setState({
             tareas: nuevasTareas,
             tarea: tarea,
         }, () => {
-            this.setState({
-                tareasHechas: [...this.state.tareasHechas, this.state.tarea]
-            })
+            if(this.state.tareas.length > 0 ){
+                this.setState(prevState => ({
+                    tareasHechas: [...prevState.tareasHechas, tarea]
+                }))
+            }else if (this.state.tareas.length === 0){ 
+                this.setState(prevState => ({
+                    tareasHechas: [...prevState.tareasHechas, tarea]
+                }))
+            }
+            else{
+                this.setState({tareasHechas: []})
+            }
         })
+        console.log("tareas hechas" +this.state.tareasHechas.length, "tareas "+this.state.tareas.length, "  crearTearea")
     }
 
     keyExtractor = item => item.id.toString()    
@@ -43,15 +53,35 @@ class ListaTareas extends Component {
         )
     }
 
+    listEmpty = () => {
+        return (
+            <View style={styles.empty}>
+                <Text style={styles.tarea}> No hay tareas </Text>
+            </View>
+        )
+    }
+
     render(){
+        const { tareasHechas, tareas } = this.state
+
+        console.log(tareasHechas.length, tareas.length, "render")
+
         return(
             <View>
-                <Button title={this.state.tarea ? this.state.tarea.titulo : 'Empezar'} onPress={this.crearTearea}/>
+                <Button 
+                    title={ tareas.length >= 1 ? tareas[tareas.length-1].titulo : 'Tareas Finalizadas'} 
+                    onPress={this.crearTearea}
+                    disabled={tareas.length < 1 ? true : false}/>
+                    
                 <View>
-                    <FlatList data={this.state.tareasHechas } renderItem={this.renderItem} keyExtractor={this.keyExtractor}/>
+                    <FlatList 
+                    data={tareasHechas.length > 0 && tareasHechas }  
+                    renderItem={this.renderItem} 
+                    keyExtractor={this.keyExtractor}
+                    ListEmptyComponent={this.listEmpty}
+                    />
                 </View>
             </View>
-            
         )
     }
 }
@@ -69,7 +99,11 @@ const styles = StyleSheet.create({
     },
     item:{
         fontSize: 16,
-        
+    },
+    empty:{
+        padding: 30,
+        margin: 8,
+        backgroundColor: '#F4462C',
     }
 })
 
